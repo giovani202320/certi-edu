@@ -1,34 +1,35 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.0;
 
-// 1. Importamos la librería nativa de pruebas de Remix
 import "remix_tests.sol";
-
-// 2. Importamos tu contrato usando la carpeta REAL de tu explorador ("contratos")
 import "../contratos/Certificados.sol";
 
 contract CertificadosTest {
     Certificados certificadosInstancia;
 
-    // Se ejecuta automáticamente antes de cada prueba
+    // Se ejecuta automáticamente antes de cada prueba para desplegar un contrato nuevo y limpio
     function beforeEach() public {
         certificadosInstancia = new Certificados();
     }
 
-    // Prueba 1: Verificar el administrador inicial 0x358AA13c52544ECCEF6B0ADD0f801012ADAD5eE3
+    // Prueba 1: Verificar que el creador del contrato se registra correctamente como admin
     function testInicializacionAdmin() public {
         Assert.equal(certificadosInstancia.admin(), msg.sender, "El creador deberia ser el admin");
     }
 
-    // Prueba 2: Verificar el registro y validacion
+    // Prueba 2: Verificar que el flujo de registro exitoso y validacion funciona bajo el nuevo formato
     function testRegistrarYVerificar() public {
-        string memory codigo = "INF-2026";
+        // Usamos un formato valido: prefijo UNSA- mas un CUI ficticio de 8 digitos
+        string memory codigoValido = "UNSA-20261405"; 
         string memory alumno = "Alejandro Torres";
 
-        certificadosInstancia.registrarCertificado(codigo, alumno);
+        // Llamamos a la funcion corregida "registrar"
+        certificadosInstancia.registrar(codigoValido, alumno);
 
-        (string memory nombreObtenido, bool esValido, ) = certificadosInstancia.verificarCertificado(codigo);
+        // Llamamos a la funcion corregida "verificar"
+        (string memory nombreObtenido, , bool esValido) = certificadosInstancia.verificar(codigoValido);
 
+        // Validamos los resultados
         Assert.equal(nombreObtenido, alumno, "El nombre del alumno no coincide");
         Assert.equal(esValido, true, "El estado del certificado deberia ser valido");
     }
